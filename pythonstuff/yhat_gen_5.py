@@ -8,9 +8,12 @@ from sklearn.metrics import r2_score
 from datetime import datetime
 import scipy
 from time import perf_counter
+import tracemalloc
 
 # Importing the module
 import os
+
+tracemalloc.start()
 
 start_time = time.perf_counter()
 
@@ -57,7 +60,7 @@ for ind in range(0,len(yraw)):
 #for i in yfilt:
 #    print(i)
 # find peaks in smoothed signal
-peaks, props = scipy.signal.find_peaks(yfilt, distance = 500, height = 25)
+peaks, props = scipy.signal.find_peaks(yfilt, distance = 500, height = 15)
 # find peaks in noisy signal using wavelet decomposition
 cwt_peaks = scipy.signal.find_peaks_cwt(yraw, widths=np.arange(5, 15))
 
@@ -103,7 +106,7 @@ max_merged = -1
 merged_dict = {}
 max_forecast = -1
 
-for p in range(estimated_period - 300, estimated_period + 700, 100):
+for p in range(1440 - 300, 1440 + 300, 100):
     print(f"Testing period {p}")
     m = Prophet(weekly_seasonality = False, yearly_seasonality = False).add_seasonality(name='gassy', period=p, fourier_order = 10, prior_scale=0.1)
     m.fit(df)
@@ -171,4 +174,12 @@ plt.savefig('yhat_graph_current.png')
 end_time = time.perf_counter()
 
 print("YHAT GENERATION TIME TAKEN:", (end_time - start_time) / 60)
+
+
+
+# displaying the memory
+print(tracemalloc.get_traced_memory())
+ 
+# stopping the library
+tracemalloc.stop()
 #plt.show()
